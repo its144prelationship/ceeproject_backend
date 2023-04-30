@@ -561,9 +561,11 @@ exports.queryEventData = async (eventId) => {
       .toString()
       .padStart(2, "0")}`;
     const eventData = await docClient.send(new QueryCommand(params));
+    const members = await getMember(eventId);
     return {
       [formattedDate]: {
         ...eventData,
+        member: members,
       },
     };
   } catch (err) {
@@ -642,4 +644,26 @@ exports.createUser = async (userId) => {
     console.log("Create user failed");
     res.status(500).send(err);
   }
+
+  exports.getMember = async (eventId) => {
+    const params = {
+      TableName: process.env.aws_table_name,
+      KeyConditionExpression: "PK = :pk and begins_with(SK, :user)",
+      ExpressionAttributeValues: {
+        ":pk": `Event#${eventId}`,
+        ":user": "User",
+      },
+    };
+    try {
+      const events = await docClient.send(new QueryCommand(params));
+      let data = [];
+      for (let e of events.Items) {
+        data.push(e.name);
+      }
+      return data;
+    } catch (err) {
+      console.log("get member failed");
+      return null;
+    }
+  };
 };
