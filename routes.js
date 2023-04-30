@@ -9,5 +9,4 @@ router.delete("/",controller.deleteUserEvent);
 router.post("/",controller.createUserEvent);
 router.delete("/invite",controller.deleteInvitation)
 
-
 module.exports = router;
