@@ -28,9 +28,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/", routes);
-app.get("/", (req, res) => {
-  res.send("Congratulation. This server is successfully run.");
-});
+// app.get("/", (req, res) => {
+//   res.send("Congratulation. This server is successfully run.");
+// });
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

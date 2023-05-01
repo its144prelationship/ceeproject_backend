@@ -363,9 +363,19 @@ exports.createEvent = async (req, res) => {
     Item: { PK: eventId, SK: eventId, ...req.body },
   };
   try {
+    // create event
     await docClient.send(new PutCommand(params));
+    // let creater join event
     await this.createUserEvent(req, res);
-    // res.send(params.Item);
+    if (req.body.member) {
+      for (const name of member) {
+        if (name != req.body.creater) {
+          // invite other user
+          const idToInvite = await queryUserId(name);
+          await this.createInvitation(idToInvite);
+        }
+      }
+    }
   } catch (err) {
     console.log("Create event failed");
     res.status(500).send(err);
@@ -666,4 +676,29 @@ exports.createUser = async (userId) => {
       return null;
     }
   };
+};
+
+exports.queryUserId = async (name) => {
+  const params = {
+    TableName: process.env.aws_table_name,
+    KeyConditionExpression: "PK = :pk and begins_with(SK, :sk)",
+    ExpressionAttributeValues: {
+      ":pk": `Name#${name}`,
+      ":sk": "User#",
+    },
+  };
+  try {
+    const res = await docClient.send(new QueryCommand(params));
+    const user = res.Items[0];
+    if (user) {
+      const userId = user.SK.split("#").pop();
+      return userId;
+    } else {
+      console.log(`User with name '${name}' not found`);
+      return null;
+    }
+  } catch (err) {
+    console.log("Query userId failed", err);
+    return null;
+  }
 };
