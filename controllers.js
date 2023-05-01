@@ -71,7 +71,6 @@ exports.accessToken = (req, res) => {
         tokenRes.on("end", () => {
           const token = JSON.parse(tokenData);
           req.session.token = token;
-          // console.log(req.session);
           if (token) {
             res.writeHead(302, {
               Location: `http://${process.env.frontendIPAddress}/component/calendar.html`,
@@ -94,7 +93,6 @@ exports.accessToken = (req, res) => {
 
 exports.getProfileInformation = async (req, res) => {
   try {
-    console.log(req.session);
     const profileOptions = {
       headers: {
         Authorization: `Bearer ${req.session.token.access_token}`,
@@ -246,7 +244,6 @@ exports.getCourseAssignments = async (req, res, cv_cid) => {
 };
 
 exports.logout = (req, res) => {
-  console.log("de");
   req.session.destroy();
   res.redirect(
     `http://${process.env.frontendIPAddress}/component/loginpage.html`
@@ -268,6 +265,7 @@ exports.getStudent = async (req, res) => {
       await this.createUser(userId, name);
     }
   } catch (err) {
+    console.log("line 268");
     console.log(err);
     res.status(500).send(err);
   }
@@ -314,8 +312,6 @@ exports.getStudent = async (req, res) => {
                 ...eventFields,
               },
             };
-            // TODO: recheck
-            // console.log(updatedReq.body);
             await this.createEvent(updatedReq, res);
           }
         }
@@ -325,14 +321,12 @@ exports.getStudent = async (req, res) => {
   //================================================================================//
   // myCalendar
   const myCalendar = await this.getAllEvents(userId);
-  // TODO: recheck
-  // console.log(myCalendar);
   //================================================================================//
   // Notification
   const noti = await this.getAllInvitations(userId);
   const data = { userId, studentId, name, myCourse, myCalendar, noti };
   console.log(data);
-  res.send(profile);
+  res.send(data);
 };
 
 // Create a new event
@@ -354,7 +348,7 @@ exports.createEvent = async (req, res) => {
   ];
   for (const field of requiredFields) {
     if (!req.body[field]) {
-      console.log(`Missing ${field} field`);
+      console.log(`Missing ${field} field when creating event`);
       res.status(400).send(`Missing ${field} field`);
     }
   }
@@ -372,7 +366,7 @@ exports.createEvent = async (req, res) => {
     // let creater join event
     await this.createUserEvent(req, res);
     if (req.body.member) {
-      for (const name of member) {
+      for (const name of req.body.member) {
         if (name != req.body.creater) {
           // invite other user
           const idToInvite = await queryUserId(name);
@@ -430,7 +424,7 @@ exports.createInvitation = async (req, res) => {
     await docClient.send(new PutCommand(params));
     res.send(params.Item);
   } catch (err) {
-    console.log(err);
+    console.log("Create invitation failed");
     res.status(500).send(err);
   }
 };
@@ -453,7 +447,7 @@ exports.deleteInvitation = async (req, res) => {
     await docClient.send(new DeleteCommand(params));
     res.send(`Event invitation with ID ${invitationId} deleted`);
   } catch (err) {
-    console.log(err);
+    console.log("Delete invitation failed");
     res.status(500).send(err);
   }
 };
@@ -483,7 +477,6 @@ exports.getAllInvitations = async (userId) => {
 
 // User - Event relation
 exports.createUserEvent = async (req, res) => {
-  // console.log(req.body);
   const requiredAttributes = ["userId", "eventId", "creater"];
   // Validation
   for (const attribute of requiredAttributes) {
@@ -524,8 +517,6 @@ exports.createUserEvent = async (req, res) => {
     },
   };
   try {
-    // console.log(params);
-    // console.log(params2);
     await docClient.send(new PutCommand(params));
     await docClient.send(new PutCommand(params2));
     // res.send("Event created successfully");
@@ -567,23 +558,23 @@ exports.queryEventData = async (eventId) => {
     },
   };
   try {
-    const res = await docClient.send(new QueryCommand(params));
-    const year = res.Items[0].year;
-    const month = res.Items[0].month + 1;
-    const date = res.Items[0].date;
+    const eventData = await docClient.send(new QueryCommand(params));
+    const year = eventData.Items[0].year;
+    const month = eventData.Items[0].month;
+    const date = eventData.Items[0].date;
     const formattedDate = `${year}-${month.toString().padStart(2, "0")}-${date
       .toString()
       .padStart(2, "0")}`;
-    const eventData = await docClient.send(new QueryCommand(params));
-    const members = await getMember(eventId);
+    const members = await this.getMember(eventId.split("#").pop());
+    const item = eventData.Items[0];
+    item.member = members;
+
     return {
-      [formattedDate]: {
-        ...eventData,
-        member: members,
-      },
+      [formattedDate]: item,
     };
   } catch (err) {
     console.log("Query event data failed");
+    console.log(err);
     return null;
   }
 };
@@ -611,6 +602,7 @@ exports.getAllEvents = async (userId) => {
         }
       }
     }
+    return data;
   } catch (err) {
     console.log("Get all event failed");
     return null;
@@ -619,23 +611,16 @@ exports.getAllEvents = async (userId) => {
 
 // User
 exports.userExisted = async (userId) => {
-  // console.log(userId);
   const params = {
     TableName: process.env.aws_table_name,
-    // KeyConditionExpression: "PK = :pk and SK = :sk",
-    // ExpressionAttributeValues: {
-    //   ":pk": `User#${userId}`,
-    //   ":sk": `User#${userId}`,
-    // },
     Key: {
       PK: `User#${userId}`,
       SK: `User#${userId}`,
     },
   };
   try {
-    // console.log(params);
     const res = await docClient.send(new GetCommand(params));
-    if (res) return true;
+    if (res.Item) return true;
     else return false;
   } catch (err) {
     console.log("Check user existence failed");
@@ -666,28 +651,28 @@ exports.createUser = async (userId, name) => {
     console.log("Create user failed");
     res.status(500).send(err);
   }
+};
 
-  exports.getMember = async (eventId) => {
-    const params = {
-      TableName: process.env.aws_table_name,
-      KeyConditionExpression: "PK = :pk and begins_with(SK, :user)",
-      ExpressionAttributeValues: {
-        ":pk": `Event#${eventId}`,
-        ":user": "User",
-      },
-    };
-    try {
-      const events = await docClient.send(new QueryCommand(params));
-      let data = [];
-      for (let e of events.Items) {
-        data.push(e.name);
-      }
-      return data;
-    } catch (err) {
-      console.log("get member failed");
-      return null;
-    }
+exports.getMember = async (eventId) => {
+  const params = {
+    TableName: process.env.aws_table_name,
+    KeyConditionExpression: "PK = :pk and begins_with(SK, :user)",
+    ExpressionAttributeValues: {
+      ":pk": `Event#${eventId}`,
+      ":user": "User",
+    },
   };
+  try {
+    const events = await docClient.send(new QueryCommand(params));
+    let data = [];
+    for (let e of events.Items) {
+      data.push(e.name);
+    }
+    return data;
+  } catch (err) {
+    console.log("get member failed");
+    return null;
+  }
 };
 
 exports.queryUserId = async (name) => {
