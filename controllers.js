@@ -34,7 +34,6 @@ exports.authApp = (req, res) => {
 };
 
 exports.accessToken = (req, res) => {
-  console.log("de");
   const parsedUrl = url.parse(req.url);
   const parsedQuery = querystring.parse(parsedUrl.query);
 
@@ -246,8 +245,9 @@ exports.getCourseAssignments = async (req, res, cv_cid) => {
 };
 
 exports.logout = (req, res) => {
+  console.log("de");
   req.session.destroy();
-  res.redirect(`http://${process.env.frontendIPAddress}/login.html`);
+  res.redirect(`http://${process.env.frontendIPAddress}/component/loginpage.html`);
   res.end();
 };
 
