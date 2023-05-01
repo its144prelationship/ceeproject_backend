@@ -247,7 +247,9 @@ exports.getCourseAssignments = async (req, res, cv_cid) => {
 exports.logout = (req, res) => {
   console.log("de");
   req.session.destroy();
-  res.redirect(`http://${process.env.frontendIPAddress}/component/loginpage.html`);
+  res.redirect(
+    `http://${process.env.frontendIPAddress}/component/loginpage.html`
+  );
   res.end();
 };
 
@@ -262,7 +264,7 @@ exports.getStudent = async (req, res) => {
   try {
     const userExistence = await this.userExisted(userId);
     if (userExistence === false) {
-      await this.createUser(userId);
+      await this.createUser(userId, name);
     }
   } catch (err) {
     console.log(err);
