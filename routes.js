@@ -10,5 +10,5 @@ router.post("/", controller.createEvent);
 router.delete("/", controller.deleteUserEvent);
 router.post("/", controller.createUserEvent);
 router.delete("/invite", controller.deleteInvitation);
-
+router.get("/logout", controller.logout);
 module.exports = router;
