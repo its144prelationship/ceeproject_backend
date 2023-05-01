@@ -640,7 +640,7 @@ exports.userExisted = async (userId) => {
   }
 };
 
-exports.createUser = async (userId) => {
+exports.createUser = async (userId, name) => {
   const params = {
     TableName: process.env.aws_table_name,
     Item: {
@@ -648,8 +648,16 @@ exports.createUser = async (userId) => {
       SK: `User#${userId}`,
     },
   };
+  const params2 = {
+    TableName: process.env.aws_table_name,
+    Item: {
+      PK: `Name#${name}`,
+      SK: `User#${userId}`,
+    },
+  };
   try {
     await docClient.send(new PutCommand(params));
+    await docClient.send(new PutCommand(params2));
     console.log("User created successfully");
   } catch (err) {
     console.log("Create user failed");
