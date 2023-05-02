@@ -485,7 +485,7 @@ exports.getAllInvitations = async (userId) => {
 // User - Event relation
 exports.createUserEvent = async (req, res) => {
   console.log(req.body.userId);
-  const requiredAttributes = ["userId", "eventId", "creater"];
+  const requiredAttributes = ["userId", "eventId"];
   // Validation
   for (const attribute of requiredAttributes) {
     if (!req.body[attribute]) {
