@@ -332,7 +332,7 @@ exports.getStudent = async (req, res) => {
 
 // Create a new event
 exports.createEvent = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   let eventId = req.body.eventId;
   // validate fields
   const requiredFields = [
@@ -562,12 +562,14 @@ exports.queryEventData = async (eventId) => {
     TableName: process.env.aws_table_name,
     KeyConditionExpression: "PK = :pk and SK = :sk",
     ExpressionAttributeValues: {
-      ":pk": eventId,
-      ":sk": eventId,
+      ":pk": `Event#${eventId}`,
+      ":sk": `Event#${eventId}`,
     },
   };
   try {
     const eventData = await docClient.send(new QueryCommand(params));
+    console.log(eventData.Items);
+    // console.log(eventId);
     const year = eventData.Items[0].year;
     const month = eventData.Items[0].month;
     const date = eventData.Items[0].date;
@@ -601,7 +603,7 @@ exports.getAllEvents = async (userId) => {
     const events = await docClient.send(new QueryCommand(params));
     let data = {};
     for (let e of events.Items) {
-      const eventData = await this.queryEventData(e.SK);
+      const eventData = await this.queryEventData(e.SK.split("#").pop());
       if (eventData) {
         const date = Object.keys(eventData)[0];
         if (data[date]) {
