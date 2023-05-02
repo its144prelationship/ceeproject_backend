@@ -366,7 +366,10 @@ exports.createEvent = async (req, res) => {
     // create event
     await docClient.send(new PutCommand(params));
     // let creater join event
+    // console.log("sent put com");
     await this.createUserEvent(req, res);
+    // console.log("sent UE com");
+
     if (req.body.member) {
       for (const name of req.body.member) {
         if (name != req.body.creater) {
@@ -378,6 +381,7 @@ exports.createEvent = async (req, res) => {
     }
   } catch (err) {
     console.log("Create event failed");
+    console.log(err);
     res.status(500).send(err);
   }
 };
@@ -489,22 +493,22 @@ exports.createUserEvent = async (req, res) => {
       return;
     }
   }
-
+  console.log(req.body);
   let dateISO = req.body.dateISO;
   let date;
   if (!dateISO) {
     date = new Date(
       req.body.year,
       req.body.month - 1,
-      req.body.day,
-      req.body.time.hour,
-      req.body.time.min,
+      req.body.date,
+      req.body.starttime.hour,
+      req.body.starttime.min,
       0,
       0
     );
   } else date = new Date(dateISO);
+  // console.log(date);
   date = date.toISOString();
-  console.log(date);
   const params = {
     TableName: process.env.aws_table_name,
     Item: {
