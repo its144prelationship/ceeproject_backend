@@ -368,7 +368,7 @@ exports.createEvent = async (req, res) => {
     // console.log("sent put com");
     const newreq = {
       ...req,
-      userId,
+      eventId,
     };
     await this.createUserEvent(newreq, res);
     // console.log("sent UE com");
