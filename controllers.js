@@ -436,7 +436,7 @@ exports.createInvitation = async (idToInvite, inviter, eventId) => {
 };
 
 exports.deleteInvitation = async (req, res) => {
-  const invitationId = req.params.invitationId;
+  const invitationId = req.body.invitationId;
   const userId = req.body.userId;
   if (!invitationId || !userId) {
     res.status(400).send("Invitation ID and user ID are required");
@@ -445,7 +445,7 @@ exports.deleteInvitation = async (req, res) => {
   const params = {
     TableName: process.env.aws_table_name,
     Key: {
-      PK: userId,
+      PK: `User#${userId}`,
       SK: invitationId,
     },
   };
