@@ -495,27 +495,27 @@ exports.createUserEvent = async (req, res) => {
     }
   }
   // console.log(req.body);
-  let dateISO = req.body.dateISO;
-  let date;
-  if (!dateISO) {
-    date = new Date(
-      req.body.year,
-      req.body.month - 1,
-      req.body.date,
-      req.body.starttime.hour,
-      req.body.starttime.min,
-      0,
-      0
-    );
-  } else date = new Date(dateISO);
-  // console.log(date);
-  date = date.toISOString();
+  // let dateISO = req.body.dateISO;
+  // let date;
+  // if (!dateISO) {
+  //   date = new Date(
+  //     req.body.year,
+  //     req.body.month - 1,
+  //     req.body.date,
+  //     req.body.starttime.hour,
+  //     req.body.starttime.min,
+  //     0,
+  //     0
+  //   );
+  // } else date = new Date(dateISO);
+  // // console.log(date);
+  // date = date.toISOString();
   const params = {
     TableName: process.env.aws_table_name,
     Item: {
       PK: `User#${req.body.userId}`,
       SK: req.body.eventId,
-      dates: date,
+      //dates: date,
     },
   };
   const params2 = {
