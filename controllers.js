@@ -374,7 +374,7 @@ exports.createEvent = async (req, res) => {
       for (const name of req.body.member) {
         if (name != req.body.creater) {
           // invite other user
-          const idToInvite = await queryUserId(name);
+          const idToInvite = await this.queryUserId(name);
           await this.createInvitation(idToInvite);
         }
       }
@@ -528,7 +528,7 @@ exports.createUserEvent = async (req, res) => {
   try {
     await docClient.send(new PutCommand(params));
     await docClient.send(new PutCommand(params2));
-    console.log("Event created successfully");
+    console.log("Join event successfully");
   } catch (err) {
     console.log("Create user-event relation failed");
     res.status(500).send(err);
@@ -691,6 +691,7 @@ exports.getMember = async (eventId) => {
 };
 
 exports.queryUserId = async (name) => {
+  console.log(name);
   const params = {
     TableName: process.env.aws_table_name,
     KeyConditionExpression: "PK = :pk and begins_with(SK, :sk)",
