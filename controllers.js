@@ -343,7 +343,6 @@ exports.createEvent = async (req, res) => {
     "date",
     "month",
     "year",
-    "day",
     "starttime",
     "endtime",
   ];
@@ -367,7 +366,11 @@ exports.createEvent = async (req, res) => {
     await docClient.send(new PutCommand(params));
     // let creater join event
     // console.log("sent put com");
-    await this.createUserEvent(req, res);
+    const newreq = {
+      ...req,
+      userId,
+    };
+    await this.createUserEvent(newreq, res);
     // console.log("sent UE com");
 
     if (req.body.member) {
@@ -483,8 +486,8 @@ exports.getAllInvitations = async (userId) => {
 
 // User - Event relation
 exports.createUserEvent = async (req, res) => {
-  console.log(req.body.userId);
-  const requiredAttributes = ["userId", "eventId, creater"];
+  // console.log(req.body.userId);
+  const requiredAttributes = ["userId", "eventId", "creater"];
   // Validation
   for (const attribute of requiredAttributes) {
     if (!req.body[attribute]) {
