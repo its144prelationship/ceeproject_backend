@@ -513,14 +513,14 @@ exports.createUserEvent = async (req, res) => {
     TableName: process.env.aws_table_name,
     Item: {
       PK: `User#${req.body.userId}`,
-      SK: `Event#${req.body.eventId}`,
+      SK: req.body.eventId,
       dates: date,
     },
   };
   const params2 = {
     TableName: process.env.aws_table_name,
     Item: {
-      PK: `Event#${req.body.eventId}`,
+      PK: req.body.eventId,
       SK: `User#${req.body.userId}`,
       name: req.body.creater,
     },
@@ -541,12 +541,12 @@ exports.deleteUserEvent = async (req, res) => {
     TableName: process.env.aws_table_name,
     Key: {
       PK: `User#${req.body.userId}`,
-      SK: req.body.eventId,
+      SK: `Event#${req.body.eventId}`,
     },
   };
   const params2 = {
     TableName: process.env.aws_table_name,
-    Key: { PK: req.body.eventId, SK: `User#${req.body.userId}` },
+    Key: { PK: `Event#${req.body.eventId}`, SK: `User#${req.body.userId}` },
   };
   try {
     await docClient.send(new DeleteCommand(params));
@@ -570,8 +570,7 @@ exports.queryEventData = async (eventId) => {
   };
   try {
     const eventData = await docClient.send(new QueryCommand(params));
-    console.log(eventData.Items);
-    // console.log(eventId);
+    console.log(eventId);
     const year = eventData.Items[0].year;
     const month = eventData.Items[0].month;
     const date = eventData.Items[0].date;
