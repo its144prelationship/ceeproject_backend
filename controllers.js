@@ -18,6 +18,7 @@ const {
   QueryCommand,
   GetCommand,
 } = require("@aws-sdk/lib-dynamodb");
+const { log } = require("console");
 const docClient = new DynamoDBClient({ regions: process.env.AWS_REGION });
 const daysOfWeek = [
   "Sunday",
@@ -331,6 +332,7 @@ exports.getStudent = async (req, res) => {
 
 // Create a new event
 exports.createEvent = async (req, res) => {
+  console.log(req.body);
   let eventId = req.body.eventId;
   // validate fields
   const requiredFields = [
@@ -355,6 +357,7 @@ exports.createEvent = async (req, res) => {
   if (!eventId || eventId === null) {
     eventId = "Event#" + uuidv4();
   } else eventId = "Event#" + eventId;
+  req.body.eventId = eventId;
   const params = {
     TableName: process.env.aws_table_name,
     Item: { PK: eventId, SK: eventId, ...req.body },
@@ -481,6 +484,7 @@ exports.createUserEvent = async (req, res) => {
   // Validation
   for (const attribute of requiredAttributes) {
     if (!req.body[attribute]) {
+      console.log(`Attribute '${attribute}' is missing`);
       res.status(400).send(`Attribute '${attribute}' is missing`);
       return;
     }
