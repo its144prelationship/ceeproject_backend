@@ -332,7 +332,6 @@ exports.getStudent = async (req, res) => {
 // Create a new event
 exports.createEvent = async (req, res) => {
   let eventId = req.body.eventId;
-
   // validate fields
   const requiredFields = [
     "name",
@@ -477,6 +476,7 @@ exports.getAllInvitations = async (userId) => {
 
 // User - Event relation
 exports.createUserEvent = async (req, res) => {
+  // console.log(req);
   const requiredAttributes = ["userId", "eventId", "creater"];
   // Validation
   for (const attribute of requiredAttributes) {
@@ -500,6 +500,7 @@ exports.createUserEvent = async (req, res) => {
     );
   } else date = new Date(dateISO);
   date = date.toISOString();
+  console.log(date);
   const params = {
     TableName: process.env.aws_table_name,
     Item: {
@@ -519,7 +520,7 @@ exports.createUserEvent = async (req, res) => {
   try {
     await docClient.send(new PutCommand(params));
     await docClient.send(new PutCommand(params2));
-    // res.send("Event created successfully");
+    console.log("Event created successfully");
   } catch (err) {
     console.log("Create user-event relation failed");
     res.status(500).send(err);
