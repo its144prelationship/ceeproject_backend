@@ -431,7 +431,6 @@ exports.createInvitation = async (idToInvite, inviter, eventId) => {
     // res.send(params.Item);
     console.log("Invite success");
   } catch (err) {
-    console.log("Create invitation failed");
     res.status(500).send(err);
   }
 };
@@ -446,8 +445,8 @@ exports.deleteInvitation = async (req, res) => {
   const params = {
     TableName: process.env.aws_table_name,
     Key: {
-      PK: `User#${userId}`,
-      SK: `Invite#${invitationId}`,
+      PK: userId,
+      SK: invitationId,
     },
   };
   try {
