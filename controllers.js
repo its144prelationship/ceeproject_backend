@@ -493,7 +493,7 @@ exports.createUserEvent = async (req, res) => {
       return;
     }
   }
-  console.log(req.body);
+  // console.log(req.body);
   let dateISO = req.body.dateISO;
   let date;
   if (!dateISO) {
@@ -536,20 +536,22 @@ exports.createUserEvent = async (req, res) => {
 };
 
 exports.deleteUserEvent = async (req, res) => {
+  console.log("start del UE");
   const params = {
     TableName: process.env.aws_table_name,
     Key: {
       PK: `User#${req.body.userId}`,
-      SK: `Event#${req.body.eventId}`,
+      SK: req.body.eventId,
     },
   };
   const params2 = {
     TableName: process.env.aws_table_name,
-    Key: { PK: `Event#${req.body.eventId}`, SK: `User#${req.body.userId}` },
+    Key: { PK: req.body.eventId, SK: `User#${req.body.userId}` },
   };
   try {
     await docClient.send(new DeleteCommand(params));
     await docClient.send(new DeleteCommand(params2));
+    console.log("DEL UE SS");
   } catch (err) {
     console.log(err);
     res.status(500).send(err);
