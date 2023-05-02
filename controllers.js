@@ -74,7 +74,7 @@ exports.accessToken = (req, res) => {
           req.session.token = token;
           if (token) {
             res.writeHead(302, {
-              Location: `http://${process.env.frontendIPAddress}/component/calendar.html`,
+              Location: `http://${process.env.frontendIPAddress}/calendar.html`,
             });
             res.end();
           }
