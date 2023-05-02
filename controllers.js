@@ -375,7 +375,7 @@ exports.createEvent = async (req, res) => {
         if (name != req.body.creater) {
           // invite other user
           const idToInvite = await this.queryUserId(name);
-          await this.createInvitation(idToInvite);
+          await this.createInvitation(idToInvite, req.body.creater, eventId);
         }
       }
     }
@@ -410,25 +410,26 @@ exports.eventDataExisted = async (eventId) => {
 };
 
 // Invite
-exports.createInvitation = async (req, res) => {
+exports.createInvitation = async (idToInvite, inviter, eventId) => {
   const invitationId = uuidv4();
-  const { userId, inviter, eventId } = req.body;
-  if (!userId || !inviter || !eventId) {
-    res.status(400).send("Missing required attributes");
-    return;
-  }
+  // const { userId, inviter, eventId } = req.body;
+  // if (!userId || !inviter || !eventId) {
+  //   res.status(400).send("Missing required attributes");
+  //   return;
+  // }
   const params = {
     TableName: process.env.aws_table_name,
     Item: {
-      PK: `User#${userId}`,
+      PK: `User#${idToInvite}`,
       SK: `Invite#${invitationId}`,
-      inviter,
-      eventId,
+      inviter: inviter,
+      eventId: eventId,
     },
   };
   try {
     await docClient.send(new PutCommand(params));
-    res.send(params.Item);
+    // res.send(params.Item);
+    console.log("Invite success");
   } catch (err) {
     console.log("Create invitation failed");
     res.status(500).send(err);
@@ -483,7 +484,7 @@ exports.getAllInvitations = async (userId) => {
 
 // User - Event relation
 exports.createUserEvent = async (req, res) => {
-  // console.log(req);
+  console.log(req.body.userId);
   const requiredAttributes = ["userId", "eventId", "creater"];
   // Validation
   for (const attribute of requiredAttributes) {
