@@ -472,7 +472,7 @@ exports.getAllInvitations = async (userId) => {
   try {
     const res = await docClient.send(new QueryCommand(params));
     for (const inv of res.Items) {
-      const event = await this.queryEventData(inv.eventId);
+      const event = await this.queryEventData(inv.eventId.split("#").pop());
       data.push({ ...inv, event: event });
     }
     return data;
